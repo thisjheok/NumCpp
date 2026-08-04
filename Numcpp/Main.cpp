@@ -9,4 +9,6 @@ int main()
 	};
 
 	ndarr.print_stride();
+	std::cout << "ndarr.ndim: " << ndarr.ndim() << '\n';
+	std::cout << "ndarr.size: " << ndarr.size() << '\n';
 }
