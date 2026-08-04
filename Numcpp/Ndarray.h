@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <cstddef>
+#include <algorithm>
 
 // ndarray의 사이즈, 생성자, n번째 원소에 접근, 출력, 범위 검사
 // ndarry 생성 시 몇차원인지 어떻게 파악할까 => shape 
@@ -14,7 +15,9 @@ public:
 	std::size_t size() const;
 	std::size_t ndim() const;
 
+	void fill(const T& value); 
 	void print_stride();
+	void print_elem();
 private:
 	std::vector<T> data_;
 	std::vector<std::size_t> shape_;
@@ -26,11 +29,11 @@ Ndarray<T>::Ndarray(std::vector<std::size_t> shape)
 	:shape_(std::move(shape))
 {
 	int data_size = 1;
-	for (std::size_t elem : shape)
+	for (std::size_t elem : shape_)
 	{
 		data_size *= elem;
 	}
-	data_.reserve(data_size);
+	data_.resize(data_size);
 }
 
 template <typename T>
@@ -62,6 +65,12 @@ std::size_t Ndarray<T>::ndim() const
 	return shape_.size();
 }
 
+template <typename T>
+void Ndarray<T>::fill(const T& value)
+{
+	std::fill(data_.begin(), data_.end(), value);
+}
+
 // Debugging function to print the stride of the ndarray
 template <typename T>
 void Ndarray<T>::print_stride()
@@ -72,3 +81,19 @@ void Ndarray<T>::print_stride()
 	}
 	std::cout << '\n';
 }
+
+// Debugging function to print the element of the ndarray
+template <typename T>
+void Ndarray<T>::print_elem()
+{
+	for (std::size_t elem : data_)
+	{
+		std::cout << elem << ' ';
+	}
+	std::cout << '\n';
+}
+
+
+// TODO: shape만 형성되어있는 array에 원소 추가하기 
+//		 API: empty, zeros, ones, full  
+// TODO: 다차원 배열에 특정 원소에 대해서 접근하기 
