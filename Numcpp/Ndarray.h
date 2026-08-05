@@ -15,9 +15,13 @@ public:
 	std::size_t size() const;
 	std::size_t ndim() const;
 
+	Ndarray<T> copy() const;
+	Ndarray<T> reshape(const std::vector<std::size_t> shape) const;
+
 	void fill(const T& value); 
 	void print_stride();
 	void print_elem();
+	void print_ndarray();
 private:
 	std::vector<T> data_;
 	std::vector<std::size_t> shape_;
@@ -65,17 +69,37 @@ std::size_t Ndarray<T>::ndim() const
 	return shape_.size();
 }
 
+// Fill the array with a scalar value.
 template <typename T>
 void Ndarray<T>::fill(const T& value)
 {
 	std::fill(data_.begin(), data_.end(), value);
 }
 
+// Return a copy of the array.
+template <typename T>
+Ndarray<T> Ndarray<T>::copy() const
+{
+	return *this;
+}
+
+// Returns an array containing the same data with a new shape.
+template <typename T>
+Ndarray<T> Ndarray<T>::reshape(const std::vector<std::size_t> shape) const
+{
+	auto reshaped_ndarr = *this;
+	
+	reshaped_ndarr.shape_ = shape;
+
+	return reshaped_ndarr;
+}
+
+
 // Debugging function to print the stride of the ndarray
 template <typename T>
 void Ndarray<T>::print_stride()
 {
-	for (std::size_t elem : stride_)
+	for (const T& elem : stride_)
 	{
 		std::cout << elem << ' ';
 	}
@@ -86,13 +110,40 @@ void Ndarray<T>::print_stride()
 template <typename T>
 void Ndarray<T>::print_elem()
 {
-	for (std::size_t elem : data_)
+	for (const T& elem : data_)
 	{
 		std::cout << elem << ' ';
 	}
 	std::cout << '\n';
 }
 
+template <typename T>
+void Ndarray<T>::print_ndarray()
+{
+	std::vector<T> data = this->data_;
+	std::vector<std::size_t> shape = this->shape_;
+
+	std::size_t bundle = 0;
+	if (!shape.empty())
+	{
+		bundle = shape.back();
+	}
+	else {
+		// TODO: exception
+	}
+	std::size_t count = 0;
+	for (const T& elem : data)
+	{
+		std::cout << elem << ' ';
+		count++;
+		if (count == bundle)
+		{
+			std::cout << '\n';
+			count = 0;
+		}
+	}
+
+}
 
 // TODO: shape만 형성되어있는 array에 원소 추가하기 
 //		 API: empty, zeros, ones, full  
