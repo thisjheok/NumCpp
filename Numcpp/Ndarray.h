@@ -25,6 +25,7 @@ public:
 
 	void fill(const T& value); 
 	void print_stride();
+	void update_stride();
 	void print_elem();
 	void print_ndarray();
 
@@ -45,6 +46,7 @@ Ndarray<T>::Ndarray(std::vector<std::size_t> shape)
 		data_size *= elem;
 	}
 	data_.resize(data_size);
+	update_stride();
 }
 
 template <typename T>
@@ -52,16 +54,7 @@ Ndarray<T>::Ndarray(std::vector<std::size_t> shape, std::vector<T> data)
 	:shape_(std::move(shape)),
 	data_(std::move(data))
 {
-	stride_.reserve(shape_.size());
-	for (std::size_t i = shape_.size(); i > 0; --i)// i: 3, 2, 1
-	{
-		std::size_t stride_elem = 1;
-		for (int j = 0; j < i - 1; ++j) // i:3, j:0,1 | i:2, j:0 
-		{
-			stride_elem *= shape_[shape_.size() - j - 1]; // shape_[2..1..] | shape_[2]
-		}
-		stride_.push_back(stride_elem);
-	}
+	update_stride();
 }
 
 template <typename T>
@@ -109,6 +102,7 @@ Ndarray<T> Ndarray<T>::reshape(const std::vector<std::size_t> shape) const
 	
 	reshaped_ndarr.shape_ = shape;
 
+	reshaped_ndarr.update_stride();
 	return reshaped_ndarr;
 }
 
@@ -178,9 +172,7 @@ T Ndarray<T>::item(const std::vector<std::size_t> indices) const
 
 template <typename T>
 Ndarray<T> Ndarray<T>::resize(const std::vector<std::size_t> shape)
-{
-	// TODO: 크기가 크다면 0으로 채울 것
-	
+{	
 	std::size_t shape_mul = 1;
 
 	for (auto elem : shape)
@@ -198,4 +190,17 @@ Ndarray<T> Ndarray<T>::resize(const std::vector<std::size_t> shape)
 	return reshape(shape);
 }
 
-// TODO: stride 계산 함수 
+// stride update function: when shape_ is recalculating, this function have to be called
+template <typename T>
+void Ndarray<T>::update_stride()
+{
+	stride_.resize(shape_.size());
+	
+	std::size_t stride = 1;
+	for (std::size_t i = shape_.size(); i > 0; i--)
+	{
+		stride_[i-1] = stride;
+		stride *= shape_[i-1];
+	}
+}
+
