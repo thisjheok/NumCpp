@@ -24,6 +24,8 @@ public:
 	void print_stride();
 	void print_elem();
 	void print_ndarray();
+
+	T item(const std::vector<std::size_t> indices) const;
 private:
 	std::vector<T> data_;
 	std::vector<std::size_t> shape_;
@@ -147,5 +149,14 @@ void Ndarray<T>::print_ndarray()
 	std::cout << "dtype=" << typeid(T).name() << '\n';
 }
 
-
-// TODO: 다차원 배열에 특정 원소에 대해서 접근하기 
+template <typename T>
+T Ndarray<T>::item(const std::vector<std::size_t> indices) const
+{
+	std::size_t index = 0;
+	for (std::size_t i = 0; i < indices.size(); ++i)
+	{
+		index += indices[i] * stride_[i];
+	}
+	std::cout << "index:" << index << '\n';
+	return data_[index];
+}
