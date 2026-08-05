@@ -2,6 +2,8 @@
 #include <vector>
 #include <cstddef>
 #include <algorithm>
+#include <typeinfo>
+#include <type_traits>
 
 // ndarray의 사이즈, 생성자, n번째 원소에 접근, 출력, 범위 검사
 // ndarry 생성 시 몇차원인지 어떻게 파악할까 => shape 
@@ -142,9 +144,8 @@ void Ndarray<T>::print_ndarray()
 			count = 0;
 		}
 	}
-
+	std::cout << "dtype=" << typeid(T).name() << '\n';
 }
 
-// TODO: shape만 형성되어있는 array에 원소 추가하기 
-//		 API: empty, zeros, ones, full  
+
 // TODO: 다차원 배열에 특정 원소에 대해서 접근하기 
