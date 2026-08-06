@@ -203,6 +203,7 @@ void Ndarray<T>::update_stride()
 	}
 }
 
+// Returns a view of the array with axes transposed 
 template <typename T>
 Ndarray<T> tranpose(const std::vector<std::size_t> axes)
 {
