@@ -12,6 +12,6 @@ int main()
 	ndarr.print_ndarray();
 	std::cout << '\n';
 
-	Ndarray<std::size_t> resized_arr = ndarr.resize({ 3,3 });
-	resized_arr.print_ndarray();
+	Ndarray<std::size_t> transposed_arr = ndarr.transpose({ 1,0 });
+	transposed_arr.print_ndarray();
 }

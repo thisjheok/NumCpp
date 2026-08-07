@@ -12,6 +12,7 @@ class Ndarray
 public:
 	Ndarray(std::vector<std::size_t> shape);
 	Ndarray(std::vector<std::size_t> shape, std::vector<T> data);
+	Ndarray(std::vector<std::size_t> shape, std::vector<T> data, std::vector<T> stride);
 
 	std::size_t size() const;
 	std::size_t ndim() const;
@@ -20,13 +21,14 @@ public:
 	Ndarray<T> copy() const;
 	Ndarray<T> reshape(const std::vector<std::size_t> shape) const;
 	Ndarray<T> resize(const std::vector<std::size_t> shape);
-	Ndarray<T> tranpose(const std::vector<std::size_t> shape);
+	Ndarray<T> transpose(const std::vector<std::size_t> shape);
 
 	void fill(const T& value); 
 	void print_stride();
 	void update_stride();
 	void print_elem();
-	void print_ndarray();
+	void print_ndarray() const;
+	void print_shape();
 
 	T item(const std::vector<std::size_t> indices) const;
 private:
@@ -54,6 +56,14 @@ Ndarray<T>::Ndarray(std::vector<std::size_t> shape, std::vector<T> data)
 	data_(std::move(data))
 {
 	update_stride();
+}
+
+template <typename T>
+Ndarray<T>::Ndarray(std::vector<std::size_t> shape, std::vector<T> data, std::vector<T> stride)
+	:shape_(std::move(shape)),
+	data_(std::move(data)),
+	stride_(std::move(stride))
+{
 }
 
 template <typename T>
@@ -116,6 +126,16 @@ void Ndarray<T>::print_stride()
 	std::cout << '\n';
 }
 
+template <typename T>
+void Ndarray<T>::print_shape()
+{
+	for (const T& elem : shape_)
+	{
+		std::cout << elem << ' ';
+	}
+	std::cout << '\n';
+}
+
 // Debugging function to print the element of the ndarray
 template <typename T>
 void Ndarray<T>::print_elem()
@@ -127,29 +147,54 @@ void Ndarray<T>::print_elem()
 	std::cout << '\n';
 }
 
+// stride-offset 반영된 ndarray print 함수 
 template <typename T>
-void Ndarray<T>::print_ndarray()
+void Ndarray<T>::print_ndarray() const
 {
-	std::vector<T> data = this->data_;
-	std::vector<std::size_t> shape = this->shape_;
+	if (shape_.empty())
+	{
+		return;
+	}
 
-	std::size_t bundle = 0;
-	if (!shape.empty())
+	const std::size_t ndim = this->ndim();
+
+	std::vector<std::size_t> indices(ndim, 0); // 크기가 ndim이고, 모든 원소가 0인 vector 
+
+	std::size_t total = 1;
+
+	// 실제로 출력해야하는 원소의 수; slice 구현 후 data_수와 출력해야하는 수가 다를 수 있다.
+	for (auto dim : shape_)
 	{
-		bundle = shape.back();
+		total *= dim;
 	}
-	else {
-		// TODO: exception
-	}
-	std::size_t count = 0;
-	for (const T& elem : data)
+
+	for (std::size_t n = 0; n < total; ++n)
 	{
-		std::cout << elem << ' ';
-		count++;
-		if (count == bundle)
+		std::size_t offset = 0;
+
+		for (std::size_t axis = 0; axis < ndim; ++axis)
+		{
+			offset += indices[axis] * stride_[axis];
+		}
+
+		std::cout << data_[offset] << ' ';
+
+		// 한 줄 끝났다면 줄 바꿈 
+		if (indices.back() + 1 == shape_.back())
 		{
 			std::cout << '\n';
-			count = 0;
+		}
+
+		for (std::size_t axis = ndim; axis-- > 0;)
+		{
+			++indices[axis];
+
+			// 추가로 출력할게 남은 상황인지 확인 
+			if (indices[axis] < shape_[axis])
+			{
+				break; // 더 남았다면 반복문 탈출해서 출력하러 가기
+			}
+			indices[axis] = 0; // 더 남지 않았다면 다음으로 
 		}
 	}
 	std::cout << "dtype=" << typeid(T).name() << '\n';
@@ -205,7 +250,23 @@ void Ndarray<T>::update_stride()
 
 // Returns a view of the array with axes transposed 
 template <typename T>
-Ndarray<T> tranpose(const std::vector<std::size_t> axes)
+Ndarray<T> Ndarray<T>::transpose(const std::vector<std::size_t> axes)
 {
+	std::vector<std::size_t> old_shape = shape_;
+	std::vector<std::size_t> new_shape;
 
+	std::vector<std::size_t> old_stride = stride_;
+	std::vector<std::size_t> new_stride;
+
+	new_shape.reserve(shape_.size());
+	new_stride.reserve(stride_.size());
+
+	for (auto i : axes)
+	{
+		new_shape.push_back(old_shape[i]);
+		new_stride.push_back(old_stride[i]);
+	}
+
+	Ndarray<T> new_ndarr(new_shape, data_, new_stride);
+	return new_ndarr;
 }
